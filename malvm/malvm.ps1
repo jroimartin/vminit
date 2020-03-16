@@ -16,6 +16,6 @@ Get-Boxstarter -Force
 
 # Bootstrap system
 Write-Host 'Bootstrap system...'
-$rootPath = 'C:\malvm'
-$pkgPath = Join-Path -Path $rootPath -ChildPath 'pkg.ps1'
+$rootPath = Join-Path ${Env:SystemDrive} 'malvm'
+$pkgPath = Join-Path $rootPath 'pkg.ps1'
 Install-BoxstarterPackage -PackageName $pkgPath

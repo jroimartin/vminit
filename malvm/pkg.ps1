@@ -17,24 +17,28 @@ Disable-UAC
 Write-Host 'Disable Microsoft Update...'
 Disable-MicrosoftUpdate
 
-# Disable OpenSSH and clean info wallpaper in microsoft-edge VMs
-if (Test-Path 'C:\BGinfo\build.cfg' -PathType Leaf) {
-	Write-Host 'Disable OpenSSHd...'
-	cmd.exe /c sc config OpenSSHd start= disabled
-	cmd.exe /c sc stop OpenSSHd
-
-	Write-Host 'Clean wallpaper info...'
-	reg delete 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run' /v 'bginfo' /f
-}
-
-# Kill Windows Defender
-Write-Host 'Kill Windows Defender...'
+# Disable Windows Defender
+Write-Host 'Disable Windows Defender...'
 try {
-	Set-MpPreference -DisableRealtimeMonitoring $true
-	choco install disabledefender-winconfig
+	Get-Service WinDefend | Stop-Service -Force
+	Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\services\WinDefend' -Name 'Start' -Value 4 -Type DWORD -Force
 } catch {
-	Write-Host 'Cannot kill Windows Defender'
+	Write-Warning 'Failed to disable WinDefend service'
 }
+try {
+	New-Item -Path 'HKLM:\SOFTWARE\Policies\Microsoft' -Name 'Windows Defender' -Force -ea 0 | Out-Null
+	New-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender' -Name 'DisableAntiSpyware' -Value 1 -PropertyType DWORD -Force -ea 0 | Out-Null
+	New-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender' -Name 'DisableRoutinelyTakingAction' -Value 1 -PropertyType DWORD -Force -ea 0 | Out-Null
+	New-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet' -Name 'SpyNetReporting' -Value 0 -PropertyType DWORD -Force -ea 0 | Out-Null
+	New-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet' -Name 'SubmitSamplesConsent' -Value 0 -PropertyType DWORD -Force -ea 0 | Out-Null
+	New-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\MRT' -Name 'DontReportInfectionInformation' -Value 1 -PropertyType DWORD -Force -ea 0 | Out-Null
+	if (-Not ((Get-WmiObject -class Win32_OperatingSystem).Version -eq '6.1.7601')) {
+		Set-MpPreference -DisableIntrusionPreventionSystem $true -DisableIOAVProtection $true -DisableRealtimeMonitoring $true -DisableScriptScanning $true -EnableControlledFolderAccess Disabled -EnableNetworkProtection AuditMode -Force -MAPSReporting Disabled -SubmitSamplesConsent NeverSend
+	}
+} catch {
+	Write-Warning 'Failed to disable Windows Defender'
+}
+
 
 # Disable Action Center notifications
 Write-Host 'Disable Action Center notifications...'
@@ -43,17 +47,17 @@ reg add 'HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer' /v Hi
 # PACKAGES
 
 # Setup FlareVM repo
-$flareFeed = 'https://www.myget.org/F/flare/api/v2'
-choco sources add -n=flare -s $flareFeed --priority 1
+$fireeyeFeed = 'https://www.myget.org/F/fireeye/api/v2'
+choco sources add -n=fireeye -s $fireeyeFeed --priority 1
 
-$flareStart = Join-Path ${Env:ProgramData} 'Microsoft\Windows\Start Menu\Programs'
-Install-ChocolateyEnvironmentVariable -VariableName 'FLARE_START' -VariableValue $flareStart -VariableType 'Machine'
+$fireeyeToolListDir = Join-Path ${Env:ProgramData} 'Microsoft\Windows\Start Menu\Programs\FLARE'
+Install-ChocolateyEnvironmentVariable -VariableName 'TOOL_LIST_DIR' -VariableValue $fireeyeToolListDir -VariableType 'Machine'
 refreshenv
 
 # Setup local repo
-$rootPath = 'C:\malvm'
-$pkgsPath = Join-Path -Path $rootPath -ChildPath 'packages'
-$malvmPath = Join-Path -Path $rootPath -ChildPath 'malvmRepo'
+$rootPath = Join-Path ${Env:SystemDrive} 'malvm'
+$pkgsPath = Join-Path $rootPath 'packages'
+$malvmPath = Join-Path $rootPath 'malvmRepo'
 
 New-Item -Path $malvmPath -ItemType directory -Force
 
@@ -63,7 +67,7 @@ foreach($d in (Get-ChildItem $pkgsPath -Include '*.nuspec' -Force -Recurse)) {
 Move-Item -Path '*.nupkg' -Destination $malvmPath
 
 # Setup Boxstarter's nuget sources
-Set-BoxstarterConfig -NugetSources "https://chocolatey.org/api/v2;$malvmPath;$flareFeed"
+Set-BoxstarterConfig -NugetSources "https://chocolatey.org/api/v2;$malvmPath;$fireeyeFeed"
 
 # Install chocolatey packages
 choco install vcredist-all
