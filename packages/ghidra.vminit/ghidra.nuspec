@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Do not remove this test for UTF-8: if “Ω” doesn’t appear as greek uppercase omega letter enclosed in quotation marks, you should use an editor that supports UTF-8, not this one. -->
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>ghidra.vminit</id>
+    <version>10.1.2</version>
+    <packageSourceUrl>https://github.com/eugbaranov/chocolatey-packages/tree/master/ghidra</packageSourceUrl>
+    <owners>eugb</owners>
+    <title>Ghidra</title>
+    <authors>National Security Agency</authors>
+    <projectUrl>https://www.ghidra-sre.org/</projectUrl>
+    <iconUrl>https://cdn.statically.io/gh/eugbaranov/chocolatey-packages/a62dad79/ghidra/GHIDRA_1.png</iconUrl>
+    <copyright>National Security Agency</copyright>
+    <licenseUrl>https://github.com/NationalSecurityAgency/ghidra/blob/master/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectSourceUrl>https://github.com/NationalSecurityAgency/ghidra</projectSourceUrl>
+    <docsUrl>https://github.com/NationalSecurityAgency/ghidra/wiki</docsUrl>
+    <bugTrackerUrl>https://github.com/NationalSecurityAgency/ghidra/issues</bugTrackerUrl>
+    <tags>reverse engineering infosec security cybersecurity</tags>
+    <summary>A software reverse engineering (SRE) suite of tools developed by NSA's Research Directorate in support of the Cybersecurity mission.</summary>
+    <description>
+      Ghidra is a software reverse engineering (SRE) framework created and maintained by the National Security Agency Research Directorate. This framework includes a suite of full-featured, high-end software analysis tools that enable users to analyze compiled code on a variety of platforms including Windows, macOS, and Linux. Capabilities include disassembly, assembly, decompilation, graphing, and scripting, along with hundreds of other features. Ghidra supports a wide variety of processor instruction sets and executable formats and can be run in both user-interactive and automated modes. Users may also develop their own Ghidra plug-in components and/or scripts using Java or Python.
+
+      In support of NSA's Cybersecurity mission, Ghidra was built to solve scaling and teaming problems on complex SRE efforts, and to provide a customizable and extensible SRE research platform. NSA has applied Ghidra SRE capabilities to a variety of problems that involve analyzing malicious code and generating deep insights for SRE analysts who seek a better understanding of potential vulnerabilities in networks and systems.
+    </description>
+    <dependencies>
+      <dependency id="openjdk11" version="11.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>

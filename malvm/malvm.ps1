@@ -6,16 +6,18 @@ if (-Not $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Adm
 	exit
 }
 
-Write-Host 'Installing Boxstarter...'
-
-# Invoke-Expression on boxstarter's installation script
-iex ((New-Object System.Net.WebClient).DownloadString('https://boxstarter.org/bootstrapper.ps1'))
-
-# Launch boostrapper installation script
+# Install Boxstarter
+Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://boxstarter.org/bootstrapper.ps1'))
 Get-Boxstarter -Force
 
-# Bootstrap system
-Write-Host 'Bootstrap system...'
+# System configuration
+Set-WindowsExplorerOptions -EnableShowProtectedOSFiles -EnableShowFileExtensions -EnableShowHiddenFilesFoldersDrives
+Disable-BingSearch
+
+# Fix Chocolatey's bug: "The specified path, file name, or both are too long"
+choco config set cacheLocation ${Env:TEMP}
+
+# Install packages
 $rootPath = Join-Path ${Env:SystemDrive} 'malvm'
 $pkgPath = Join-Path $rootPath 'pkg.ps1'
-Install-BoxstarterPackage -PackageName $pkgPath
+Install-BoxstarterPackage -PackageName $pkgPath -DisableReboots
